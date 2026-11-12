@@ -88,6 +88,7 @@ end)
 
 ns:On("PLAYER_LOGIN", function()
     InitCharacter()
+    ns:MergeLearned()
     ns:BuildTrackedItems()
     ns:ScanAll()
 end)
@@ -126,9 +127,16 @@ end
 SLASH_DOINEEDTHIS1 = "/dint"
 SlashCmdList.DOINEEDTHIS = function(msg)
     msg = strtrim(msg or ""):lower()
-    if msg == "scan" then
+    local cmd, rest = msg:match("^(%S*)%s*(.-)$")
+    if cmd == "scan" then
         ns:ScanAll()
         ns:Print("Rescanned.")
+    elseif cmd == "api" then
+        ns:CheckAPI()
+    elseif cmd == "completed" then
+        ns:DumpCompleted(rest)
+    elseif cmd == "learned" then
+        ns:ListLearned()
     else
         Dump()
     end

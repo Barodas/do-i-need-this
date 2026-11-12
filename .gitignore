@@ -13,3 +13,6 @@ desktop.ini
 
 # Release packaging output
 *.zip
+
+# Tool caches
+tools/.cache/

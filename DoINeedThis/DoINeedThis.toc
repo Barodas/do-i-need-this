@@ -8,3 +8,5 @@
 Core.lua
 Data\Quests.lua
 Scanner.lua
+Learn.lua
+Debug.lua
