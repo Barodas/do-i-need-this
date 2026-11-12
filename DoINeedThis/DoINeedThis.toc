@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: Do I Need This?
+## Notes: Tracks quest turn-in items across your characters and mails them to the alts that need them.
+## Author: Luke Savage
+## Version: 0.1.0
+## SavedVariables: DoINeedThisDB
+
+Core.lua
+Data\Quests.lua
+Scanner.lua

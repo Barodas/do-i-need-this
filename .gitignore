@@ -1,0 +1,15 @@
+# OS / Dropbox clutter
+Thumbs.db
+desktop.ini
+.DS_Store
+*conflicted copy*
+.dropbox
+.dropbox.attr
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Release packaging output
+*.zip
