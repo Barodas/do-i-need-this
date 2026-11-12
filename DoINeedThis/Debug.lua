@@ -24,6 +24,18 @@ local API_CHECKS = {
     "C_Container.GetContainerItemInfo",
     "GetQuestItemLink",
     "GetQuestLogLeaderBoard",
+    "C_QuestLog.IsOnQuest",
+    "C_QuestLog.GetLogIndexForQuestID",
+    "GetQuestLogIndexByID",
+    "GetNumQuestLogEntries",
+    "GetQuestLogTitle",
+    "C_QuestLog.GetNumQuestLogEntries",
+    "C_QuestLog.GetInfo",
+    "GetQuestID",
+    "GetNumQuestItems",
+    "GetQuestItemInfo",
+    "GetTitleText",
+    "C_Timer.After",
 }
 
 function ns:CheckAPI()

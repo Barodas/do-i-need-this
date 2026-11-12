@@ -25,27 +25,42 @@ end
 -- ---------------------------------------------------------------------------
 -- Quests
 -- ---------------------------------------------------------------------------
+-- Is the quest currently in the quest log? Uses whichever API the client has.
+local function IsOnQuest(questID)
+    if C_QuestLog and C_QuestLog.IsOnQuest then
+        return C_QuestLog.IsOnQuest(questID)
+    end
+    if C_QuestLog and C_QuestLog.GetLogIndexForQuestID then
+        return C_QuestLog.GetLogIndexForQuestID(questID) ~= nil
+    end
+    if GetQuestLogIndexByID then
+        local index = GetQuestLogIndexByID(questID)
+        return index ~= nil and index > 0
+    end
+    return false
+end
+
 local function ActiveQuestIDs()
     local active = {}
-    for i = 1, GetNumQuestLogEntries() do
-        local _, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
-        if not isHeader and questID then
-            active[questID] = true
-        end
+    for questID in pairs(ns.Quests) do
+        if IsOnQuest(questID) then active[questID] = true end
     end
     return active
 end
 
 function ns:ScanQuests()
     local active = ActiveQuestIDs()
+    local quests = ns.char.quests
     for questID, quest in pairs(ns.Quests) do
-        local state
-        if not quest.repeatable and IsQuestFlaggedCompleted(questID) then
-            state = "done"
-        elseif active[questID] then
-            state = "active"
+        if quest.repeatable then
+            quests[questID] = active[questID] and "active" or nil
+        elseif quests[questID] == "done" or IsQuestFlaggedCompleted(questID) then
+            -- Never clear "done": completion data can be missing right after
+            -- login, before the server has sent it.
+            quests[questID] = "done"
+        else
+            quests[questID] = active[questID] and "active" or nil
         end
-        ns.char.quests[questID] = state
     end
 end
 
@@ -103,6 +118,14 @@ ns:On("QUEST_TURNED_IN", function(_, questID)
     end
 end)
 
-ns:On("QUEST_ACCEPTED", function()
-    if ns.char then ns:ScanQuests() end
+-- QUEST_LOG_UPDATE fires often (and once the server has sent quest data after
+-- login), so rescan at most once per second.
+local questScanPending = false
+ns:On("QUEST_LOG_UPDATE", function()
+    if not ns.char or questScanPending then return end
+    questScanPending = true
+    C_Timer.After(1, function()
+        questScanPending = false
+        ns:ScanQuests()
+    end)
 end)

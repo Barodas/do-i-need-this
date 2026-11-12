@@ -109,6 +109,7 @@ local function Dump()
         ns:Print("No quests configured yet (Data/Quests.lua).")
         return
     end
+    ns:ScanAll()
     ns:Print(("%s - %s"):format(ns.realm, ns.faction))
     for _, name in ipairs(ns.group.priority) do
         local char = ns.group.characters[name]
