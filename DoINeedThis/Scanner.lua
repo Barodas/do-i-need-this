@@ -62,6 +62,7 @@ function ns:ScanQuests()
             quests[questID] = active[questID] and "active" or nil
         end
     end
+    ns:Changed()
 end
 
 -- ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ function ns:ScanBags()
     for itemID in pairs(ns.trackedItems) do
         ItemRecord(itemID).bags = GetItemCount(itemID) or 0
     end
+    ns:Changed()
 end
 
 -- Bank contents are only reliable while the bank is open, so we snapshot then.
@@ -80,6 +82,7 @@ function ns:ScanBank()
         local total = GetItemCount(itemID, true) or 0
         ItemRecord(itemID).bank = math.max(0, total - bags)
     end
+    ns:Changed()
 end
 
 function ns:ScanAll()
@@ -115,6 +118,7 @@ ns:On("QUEST_TURNED_IN", function(_, questID)
     local quest = ns.Quests[questID]
     if ns.char and quest and not quest.repeatable then
         ns.char.quests[questID] = "done"
+        ns:Changed()
     end
 end)
 

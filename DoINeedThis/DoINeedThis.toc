@@ -9,4 +9,7 @@ Core.lua
 Data\Quests.lua
 Scanner.lua
 Learn.lua
+Allocator.lua
 Debug.lua
+UI\MainFrame.lua
+Tooltip.lua

@@ -36,6 +36,12 @@ local API_CHECKS = {
     "GetQuestItemInfo",
     "GetTitleText",
     "C_Timer.After",
+    "C_Item.GetItemInfo",
+    "C_Item.GetItemInfoInstant",
+    "GetItemInfoInstant",
+    "C_Item.RequestLoadItemDataByID",
+    "TooltipDataProcessor.AddTooltipPostCall",
+    "tContains",
 }
 
 function ns:CheckAPI()
