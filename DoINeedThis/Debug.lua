@@ -12,39 +12,16 @@ local function Has(path)
     return type(t) == "function"
 end
 
+-- Only functions not yet confirmed on the Forever client. Confirmed ones are
+-- recorded in memory/PLAN notes and removed from here to keep the output short.
 local API_CHECKS = {
-    "C_QuestLog.GetAllCompletedQuestIDs",
-    "GetQuestsCompleted",
-    "C_QuestLog.IsQuestFlaggedCompleted",
-    "IsQuestFlaggedCompleted",
-    "C_QuestLog.GetQuestInfo",
-    "C_QuestLog.GetTitleForQuestID",
-    "C_QuestLog.RequestLoadQuestByID",
-    "C_Item.GetItemCount",
-    "C_Container.GetContainerItemInfo",
-    "GetQuestItemLink",
-    "GetQuestLogLeaderBoard",
-    "C_QuestLog.IsOnQuest",
-    "C_QuestLog.GetLogIndexForQuestID",
-    "GetQuestLogIndexByID",
-    "GetNumQuestLogEntries",
-    "GetQuestLogTitle",
-    "C_QuestLog.GetNumQuestLogEntries",
-    "C_QuestLog.GetInfo",
-    "GetQuestID",
-    "GetNumQuestItems",
-    "GetQuestItemInfo",
-    "GetTitleText",
-    "C_Timer.After",
-    "C_Item.GetItemInfo",
-    "C_Item.GetItemInfoInstant",
-    "GetItemInfoInstant",
-    "C_Item.RequestLoadItemDataByID",
-    "TooltipDataProcessor.AddTooltipPostCall",
-    "tContains",
 }
 
 function ns:CheckAPI()
+    if #API_CHECKS == 0 then
+        ns:Print("API check: nothing pending.")
+        return
+    end
     ns:Print("API check:")
     for _, path in ipairs(API_CHECKS) do
         print(("  %s %s"):format(Has(path) and "|cff00ff00yes|r" or "|cffff4040no |r", path))

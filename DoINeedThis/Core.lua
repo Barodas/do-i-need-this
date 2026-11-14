@@ -138,12 +138,14 @@ SlashCmdList.DOINEEDTHIS = function(msg)
         ns:DumpCompleted(rest)
     elseif cmd == "learned" then
         ns:ListLearned()
+    elseif cmd == "config" or cmd == "settings" then
+        ns:OpenOptions()
     elseif cmd == "dump" then
         Dump()
     elseif cmd == "" then
         ns:ScanAll()
         ns:ToggleMainFrame()
     else
-        ns:Print("Commands: /dint (window), /dint dump, /dint scan, /dint learned, /dint completed [text], /dint api")
+        ns:Print("Commands: /dint (window), /dint config, /dint dump, /dint scan, /dint learned, /dint completed [text], /dint api")
     end
 end

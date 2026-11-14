@@ -12,4 +12,5 @@ Learn.lua
 Allocator.lua
 Debug.lua
 UI\MainFrame.lua
+UI\Options.lua
 Tooltip.lua

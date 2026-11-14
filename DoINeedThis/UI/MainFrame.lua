@@ -98,8 +98,14 @@ local function CreateMainFrame()
         f.title:SetPoint("TOP", 0, -6)
     end
 
+    local settings = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    settings:SetSize(80, 20)
+    settings:SetPoint("TOPRIGHT", -10, -28)
+    settings:SetText("Settings")
+    settings:SetScript("OnClick", function() ns:OpenOptions() end)
+
     scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", 12, -32)
+    scroll:SetPoint("TOPLEFT", 12, -52)
     scroll:SetPoint("BOTTOMRIGHT", -32, 12)
 
     content = CreateFrame("Frame", nil, scroll)
