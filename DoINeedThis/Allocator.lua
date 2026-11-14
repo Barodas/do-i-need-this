@@ -154,9 +154,10 @@ function ns:PlanDistribution(group, faction, senderName, includeBank)
                 end
             end
 
+            -- The fallback gets leftovers even if excluded (e.g. a bank alt
+            -- that never does the quests): exclusion only means "needs nothing".
             local fallback = group.fallback
-            if available > 0 and fallback and fallback ~= senderName
-                and group.characters[fallback] and not IsExcluded(group, fallback) then
+            if available > 0 and fallback and fallback ~= senderName and group.characters[fallback] then
                 Give(fallback, itemID, available)
             end
         end
@@ -183,6 +184,33 @@ function ns:PlanBankWithdrawals(group, faction, senderName)
         end
     end
     return result
+end
+
+-- What `name` needs for their own quests that is sitting in their own bank.
+--   { [itemID] = count to take out }
+function ns:PlanOwnBankNeeds(group, faction, name)
+    local result = {}
+    local char = group.characters[name]
+    if not char or IsExcluded(group, name) then return result end
+    for itemID, r in pairs(ns:CharRequirements(char, faction)) do
+        local bags, bank, mail = Held(char, itemID)
+        local take = math.min(bank, math.max(0, r.required - bags - mail))
+        if take > 0 then result[itemID] = take end
+    end
+    return result
+end
+
+-- Everything to take out of the bank: own needs plus items to mail on.
+--   { [itemID] = count }
+function ns:PlanAllWithdrawals(group, faction, name)
+    local total = {}
+    for itemID, count in pairs(ns:PlanOwnBankNeeds(group, faction, name)) do
+        total[itemID] = count
+    end
+    for itemID, w in pairs(ns:PlanBankWithdrawals(group, faction, name)) do
+        total[itemID] = (total[itemID] or 0) + w.total
+    end
+    return total
 end
 
 -- ---------------------------------------------------------------------------

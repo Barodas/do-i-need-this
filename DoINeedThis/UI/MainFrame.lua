@@ -106,9 +106,34 @@ local function CreateMainFrame()
     settings:SetText("Settings")
     settings:SetScript("OnClick", function() ns:OpenOptions() end)
 
+    -- Tabs: "Mail/Bank" (what to send / take from the bank) and "Item List".
+    f.tabs = {}
+    local function Tab(key, label, x)
+        local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        b:SetSize(90, 20)
+        b:SetPoint("TOPLEFT", x, -28)
+        b:SetText(label)
+        b:SetScript("OnClick", function()
+            ns.db.settings.tab = key
+            ns:RefreshMainFrame()
+        end)
+        f.tabs[key] = b
+    end
+    Tab("mail", "Mail/Bank", 12)
+    Tab("items", "Item List", 106)
+
+    -- Bottom bar (Mail tab only)
+    f.withdraw = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    f.withdraw:SetSize(150, 22)
+    f.withdraw:SetPoint("BOTTOMLEFT", 12, 10)
+    f.withdraw:SetText("Withdraw from bank")
+    f.withdraw:SetScript("OnClick", function() ns:WithdrawFromBank() end)
+    f.withdrawNote = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    f.withdrawNote:SetPoint("LEFT", f.withdraw, "RIGHT", 8, 0)
+
     scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", 12, -52)
-    scroll:SetPoint("BOTTOMRIGHT", -32, 12)
+    scroll:SetPoint("TOPLEFT", 12, -56)
+    scroll:SetPoint("BOTTOMRIGHT", -32, 40)
 
     content = CreateFrame("Frame", nil, scroll)
     content:SetSize(WIDTH - 48, 1)
@@ -196,10 +221,38 @@ function ns:RefreshMainFrame()
     for i = 1, usedLines do lines[i]:Hide() end
     usedLines = 0
 
-    -- What this character would mail right now, then what to take from the bank.
-    ns:RenderMailing(group, faction)
-    AddLine("")
+    local tab = ns.db.settings.tab == "items" and "items" or "mail"
+    frame.tabs.mail:SetEnabled(tab ~= "mail")
+    frame.tabs.items:SetEnabled(tab ~= "items")
+    frame.withdraw:SetShown(tab == "mail")
+    frame.withdrawNote:SetShown(tab == "mail")
 
+    if tab == "mail" then
+        ns:RenderMailing(group, faction)
+        ns:RefreshWithdrawButton(group, faction)
+    else
+        ns:RenderItems(group, faction)
+    end
+    content:SetHeight(math.max(1, usedLines * LINE_HEIGHT))
+end
+
+function ns:RefreshWithdrawButton(group, faction)
+    local total = 0
+    for _, count in pairs(ns:PlanAllWithdrawals(group, faction, ns.playerName)) do total = total + count end
+    local note
+    if ns:IsWithdrawing() then
+        note = "Withdrawing..."
+    elseif total == 0 then
+        note = "Nothing to withdraw"
+    elseif not ns.bankOpen then
+        note = "Open your bank to withdraw"
+    end
+    frame.withdraw:SetText(total > 0 and ("Withdraw from bank (%d)"):format(total) or "Withdraw from bank")
+    frame.withdraw:SetEnabled(total > 0 and ns.bankOpen and not ns:IsWithdrawing())
+    frame.withdrawNote:SetText(note or "")
+end
+
+function ns:RenderItems(group, faction)
     local summary = ns:Summarize(group, faction)
 
     -- Sort items by name (uncached names sort last by ID).
@@ -233,8 +286,6 @@ function ns:RefreshMainFrame()
         end
         AddLine("")
     end
-
-    content:SetHeight(math.max(1, usedLines * LINE_HEIGHT))
 end
 
 local function RecipientText(group, name)
@@ -273,6 +324,16 @@ function ns:RenderMailing(group, faction)
                 if w.to[name] then to[#to + 1] = ("%s %d"):format(RecipientText(group, name), w.to[name]) end
             end
             AddLine(("%s  x%d"):format(ns:ItemName(itemID), w.total), "for " .. table.concat(to, ", "),
+                { indent = 24, icon = ns:ItemIcon(itemID) })
+        end
+    end
+
+    local own = ns:PlanOwnBankNeeds(group, faction, me)
+    if next(own) then
+        AddLine("")
+        AddLine("Take from bank for your own quests", Gray("as of last bank visit"), { header = true })
+        for itemID, count in pairs(own) do
+            AddLine(("%s  x%d"):format(ns:ItemName(itemID), count), nil,
                 { indent = 24, icon = ns:ItemIcon(itemID) })
         end
     end

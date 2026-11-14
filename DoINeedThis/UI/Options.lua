@@ -102,8 +102,8 @@ help:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
 help:SetWidth(CONTENT_WIDTH)
 help:SetJustifyH("LEFT")
 help:SetText("Characters higher in the list receive items first. The fallback character "
-    .. "receives items nobody needs, to store or sell. Excluded characters are ignored "
-    .. "for needs and mailing. "
+    .. "receives items nobody needs, to store or sell. Excluded characters never need anything "
+    .. "(useful for a bank alt), but an excluded fallback still receives the leftovers. "
     .. "Mail can only go to characters on the same realm and faction.")
 
 -- Group selector: < Realm (Faction) >

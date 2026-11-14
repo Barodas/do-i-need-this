@@ -93,25 +93,24 @@ end
 -- ---------------------------------------------------------------------------
 -- Events
 -- ---------------------------------------------------------------------------
-local bankOpen = false
-
 ns:On("BAG_UPDATE_DELAYED", function()
     if not ns.char then return end
     ns:ScanBags()
-    if bankOpen then ns:ScanBank() end
+    if ns.bankOpen then ns:ScanBank() end
 end)
 
 ns:On("BANKFRAME_OPENED", function()
-    bankOpen = true
+    ns.bankOpen = true
     ns:ScanBank()
 end)
 
 ns:On("BANKFRAME_CLOSED", function()
-    bankOpen = false
+    ns.bankOpen = false
+    ns:Changed()
 end)
 
 ns:On("PLAYERBANKSLOTS_CHANGED", function()
-    if bankOpen then ns:ScanBank() end
+    if ns.bankOpen then ns:ScanBank() end
 end)
 
 ns:On("QUEST_TURNED_IN", function(_, questID)

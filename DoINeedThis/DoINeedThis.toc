@@ -15,3 +15,4 @@ UI\MainFrame.lua
 UI\Options.lua
 Tooltip.lua
 Mail.lua
+Bank.lua

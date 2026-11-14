@@ -15,6 +15,7 @@ end
 -- Only functions not yet confirmed on the Forever client; confirmed ones are
 -- removed to keep the output short.
 local API_CHECKS = {
+    "C_Container.UseContainerItem",
 }
 
 
