@@ -24,10 +24,12 @@ function ns:ItemIcon(itemID)
     return icon or 134400   -- question mark
 end
 
-function ns:CharName(group, name)
+-- Class-coloured name; `text` overrides what's shown (e.g. the full name).
+function ns:CharName(group, name, text)
+    text = text or name
     local char = group.characters[name]
     local color = char and RAID_CLASS_COLORS and RAID_CLASS_COLORS[char.class]
-    return color and color.colorStr and ("|c" .. color.colorStr .. name .. "|r") or name
+    return color and color.colorStr and ("|c" .. color.colorStr .. text .. "|r") or text
 end
 
 local function Gray(s) return "|cff808080" .. s .. "|r" end

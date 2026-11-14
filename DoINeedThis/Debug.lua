@@ -12,10 +12,11 @@ local function Has(path)
     return type(t) == "function"
 end
 
--- Only functions not yet confirmed on the Forever client. Confirmed ones are
--- recorded in memory/PLAN notes and removed from here to keep the output short.
+-- Only functions not yet confirmed on the Forever client; confirmed ones are
+-- removed to keep the output short.
 local API_CHECKS = {
 }
+
 
 function ns:CheckAPI()
     if #API_CHECKS == 0 then

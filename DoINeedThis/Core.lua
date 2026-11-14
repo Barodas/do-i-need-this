@@ -48,6 +48,7 @@ local function InitDB()
     db.version = db.version or DB_VERSION
     db.settings = db.settings or {}
     db.realms = db.realms or {}
+    if db.debug then db.debug.names = nil end   -- one-off name discovery output
     ns.db = db
 end
 
@@ -59,6 +60,15 @@ function ns:GetGroup(realm, faction)
     return r[faction]
 end
 
+-- Name to address mail to. Forever characters have a surname that mail needs.
+-- fullName ("First Surname") is recorded when the character logs in.
+function ns:MailName(name, group)
+    group = group or ns.group
+    local char = group and group.characters[name]
+    if char and char.fullName and strtrim(char.fullName) ~= "" then return strtrim(char.fullName) end
+    return name
+end
+
 local function InitCharacter()
     local name = UnitName("player")
     local realm = GetRealmName()
@@ -68,6 +78,9 @@ local function InitCharacter()
     local char = group.characters[name] or {}
     char.class = select(2, UnitClass("player"))
     char.level = UnitLevel("player")
+    -- On Forever, UnitName's second return is the surname and
+    -- GetUnitName("player", true) gives "First Surname".
+    char.fullName = GetUnitName("player", true) or name
     char.quests = char.quests or {}
     char.items = char.items or {}
     group.characters[name] = char

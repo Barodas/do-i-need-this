@@ -103,7 +103,8 @@ help:SetWidth(CONTENT_WIDTH)
 help:SetJustifyH("LEFT")
 help:SetText("Characters higher in the list receive items first. The fallback character "
     .. "receives items nobody needs, to store or sell. Excluded characters are ignored "
-    .. "for needs and mailing. Mail can only go to characters on the same realm and faction.")
+    .. "for needs and mailing. "
+    .. "Mail can only go to characters on the same realm and faction.")
 
 -- Group selector: < Realm (Faction) >
 local prevButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
@@ -231,9 +232,10 @@ function ns:RefreshOptions()
         row:Show()
         row.rank:SetText(i)
 
-        local label = ns:CharName(group, name) .. Gray((" %d"):format(char.level or 0))
+        local display = char.fullName or name
+        local label = ns:CharName(group, name, display) .. Gray((" %d"):format(char.level or 0))
         if name == ns.playerName and isCurrent then label = label .. Gray("  (you)") end
-        if group.excluded[name] then label = Gray(name .. "  (excluded)") end
+        if group.excluded[name] then label = Gray(display .. "  (excluded)") end
         row.name:SetText(label)
 
         row.up:SetEnabled(i > 1)
