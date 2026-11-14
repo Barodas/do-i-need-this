@@ -188,6 +188,10 @@ function ns:RefreshMainFrame()
     for i = 1, usedLines do lines[i]:Hide() end
     usedLines = 0
 
+    -- What this character would mail right now, then what to take from the bank.
+    ns:RenderMailing(group, faction)
+    AddLine("")
+
     local summary = ns:Summarize(group, faction)
 
     -- Sort items by name (uncached names sort last by ID).
@@ -222,29 +226,48 @@ function ns:RefreshMainFrame()
         AddLine("")
     end
 
-    -- What this character would mail right now.
-    AddLine(("Mailing from %s"):format(ns:CharName(group, ns.playerName)), nil, { header = true })
-    local plan = ns:PlanDistribution(group, faction, ns.playerName)
+    content:SetHeight(math.max(1, usedLines * LINE_HEIGHT))
+end
+
+local function RecipientText(group, name)
+    local text = ns:CharName(group, name)
+    if name == group.fallback then text = text .. Gray(" (fallback)") end
+    return text
+end
+
+function ns:RenderMailing(group, faction)
+    local me = ns.playerName
+
+    -- Recipients in priority order, then the fallback if it isn't in the list.
+    local order = {}
+    for _, name in ipairs(group.priority) do order[#order + 1] = name end
+    if group.fallback and not tContains(order, group.fallback) then order[#order + 1] = group.fallback end
+
+    AddLine(("Mailing from %s"):format(ns:CharName(group, me)), nil, { header = true })
+    local plan = ns:PlanDistribution(group, faction, me)
     local any = false
-    for _, name in ipairs(group.priority) do
-        if plan[name] then
-            for itemID, count in pairs(plan[name]) do
-                any = true
-                AddLine(("%s  x%d"):format(ns:ItemName(itemID), count), "to " .. ns:CharName(group, name),
-                    { indent = 24, icon = ns:ItemIcon(itemID) })
-            end
-        end
-    end
-    if group.fallback and plan[group.fallback] and not tContains(group.priority, group.fallback) then
-        for itemID, count in pairs(plan[group.fallback]) do
+    for _, name in ipairs(order) do
+        for itemID, count in pairs(plan[name] or {}) do
             any = true
-            AddLine(("%s  x%d"):format(ns:ItemName(itemID), count), "to " .. ns:CharName(group, group.fallback) .. Gray(" (fallback)"),
+            AddLine(("%s  x%d"):format(ns:ItemName(itemID), count), "to " .. RecipientText(group, name),
                 { indent = 24, icon = ns:ItemIcon(itemID) })
         end
     end
     if not any then AddLine(Gray("Nothing to send from this character's bags."), nil, { indent = 24 }) end
 
-    content:SetHeight(math.max(1, usedLines * LINE_HEIGHT))
+    local withdrawals = ns:PlanBankWithdrawals(group, faction, me)
+    if next(withdrawals) then
+        AddLine("")
+        AddLine("Take from bank to send", Gray("as of last bank visit"), { header = true })
+        for itemID, w in pairs(withdrawals) do
+            local to = {}
+            for _, name in ipairs(order) do
+                if w.to[name] then to[#to + 1] = ("%s %d"):format(RecipientText(group, name), w.to[name]) end
+            end
+            AddLine(("%s  x%d"):format(ns:ItemName(itemID), w.total), "for " .. table.concat(to, ", "),
+                { indent = 24, icon = ns:ItemIcon(itemID) })
+        end
+    end
 end
 
 function ns:ToggleMainFrame()

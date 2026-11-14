@@ -108,10 +108,10 @@ function ns:Summarize(group, faction)
 end
 
 -- ---------------------------------------------------------------------------
--- Distribution plan for the sender's bag contents.
+-- Distribution plan for the sender's bag contents (plus bank if includeBank).
 --   plan = { [recipient] = { [itemID] = count } }
 -- ---------------------------------------------------------------------------
-function ns:PlanDistribution(group, faction, senderName)
+function ns:PlanDistribution(group, faction, senderName, includeBank)
     local plan = {}
     local sender = group.characters[senderName]
     if not sender then return plan end
@@ -131,7 +131,8 @@ function ns:PlanDistribution(group, faction, senderName)
     end
 
     for itemID in pairs(ns.trackedItems) do
-        local available = (Held(sender, itemID))
+        local senderBags, senderBank = Held(sender, itemID)
+        local available = senderBags + (includeBank and senderBank or 0)
         if available > 0 then
             for _, name in ipairs(group.priority) do
                 if available <= 0 then break end
@@ -139,7 +140,9 @@ function ns:PlanDistribution(group, faction, senderName)
                 if char and not IsExcluded(group, name) then
                     local bags, bank, mail = Held(char, itemID)
                     if name == senderName then
-                        local keep = math.max(0, Required(name, itemID) - bank - mail)
+                        -- Bank counts as already kept unless it's up for distribution too.
+                        local kept = mail + (includeBank and 0 or bank)
+                        local keep = math.max(0, Required(name, itemID) - kept)
                         available = available - math.min(keep, available)
                     else
                         local give = math.min(available, math.max(0, Required(name, itemID) - (bags + bank + mail)))
@@ -159,6 +162,27 @@ function ns:PlanDistribution(group, faction, senderName)
         end
     end
     return plan
+end
+
+-- Items the sender should take out of the bank so they can be mailed:
+-- the extra the plan would send if the bank were in the bags.
+--   { [itemID] = { total = n, to = { [recipient] = n } } }
+function ns:PlanBankWithdrawals(group, faction, senderName)
+    local bagsOnly = ns:PlanDistribution(group, faction, senderName, false)
+    local withBank = ns:PlanDistribution(group, faction, senderName, true)
+    local result = {}
+    for name, items in pairs(withBank) do
+        for itemID, count in pairs(items) do
+            local extra = count - ((bagsOnly[name] and bagsOnly[name][itemID]) or 0)
+            if extra > 0 then
+                local r = result[itemID] or { total = 0, to = {} }
+                r.total = r.total + extra
+                r.to[name] = extra
+                result[itemID] = r
+            end
+        end
+    end
+    return result
 end
 
 -- ---------------------------------------------------------------------------
